@@ -1,3 +1,6 @@
+const PATH: &str = "/home/amber/dev/todo/todo.csv";
+// const PATH_SCHOOL: &str = "/home/amber/dev/todo/todo_school.csv";
+
 mod args;
 
 use args::{AddItem, RemoveItem, UserArgs, UserOption};
@@ -15,13 +18,12 @@ use tabled::{
     },
 };
 
-const PATH: &str = "/home/amber/dev/todo/todo.csv";
 
 #[derive(Serialize, Deserialize, Debug, Tabled)]
 struct TodoItem {
-    number: u8,
+    num: u8,
     task: String,
-    due_date: String,
+    due: String,
 }
 
 fn add_todo(item: AddItem) -> Result<(), Box<dyn Error>>{
@@ -33,12 +35,12 @@ fn add_todo(item: AddItem) -> Result<(), Box<dyn Error>>{
     let mut writer = Writer::from_writer(file);
     let mut reader = Reader::from_path(PATH)?;
     let todo = TodoItem {
-        number: reader.records().count() as u8 + 1,
+        num: reader.records().count() as u8 + 1,
         task: item.task,
-        due_date: item.due_date,
+        due: item.due,
     };
 
-    writer.write_record(&[todo.number.to_string(), todo.task, todo.due_date])?;
+    writer.write_record(&[todo.num.to_string(), todo.task, todo.due])?;
     writer.flush()?;
     Ok(())
 }
@@ -49,16 +51,15 @@ fn remove_todo(item: RemoveItem) -> Result<(), Box<dyn Error>>{
     let mut iter = reader.deserialize();
     while let Some(result) = iter.next() {
         let record: TodoItem = result?;
-        println!("{:?}", record);
-        if record.number == item.number {
+        if record.num == item.num {
             continue;
         }
         todo_vec.push(record);
     }
     let mut writer = Writer::from_path(PATH)?;
     writer.write_record(&["number", "task", "due_date"])?;
-    for todo in todo_vec {
-        writer.serialize((todo.number, todo.task, todo.due_date))?;
+    for (todo_num, todo) in todo_vec.into_iter().enumerate() {
+        writer.serialize((todo_num + 1, todo.task, todo.due))?;
     }
     writer.flush()?;
     Ok(())
@@ -92,10 +93,6 @@ fn show_todo() -> Result<(), Box<dyn Error>> {
         .modify(Columns::single(1), clr_bright_magenta)
         .modify(Columns::single(2), clr_red);
     println!("{}", table);
-    // for result in reader.records() {
-        // let record = result?;
-        // println!("{:?}", record); 
-    // }
     Ok(())
 }
 

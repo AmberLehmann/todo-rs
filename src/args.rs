@@ -28,13 +28,13 @@ pub struct AddItem {
     /// Name of task
     pub task: String,
     /// Due Date
-    pub due_date: String,
+    pub due: String,
 }
 
 #[derive(Debug, Args)]
 pub struct RemoveItem {
     /// Number of item to remove
-    pub number: u8,
+    pub num: u8,
 }
 
 
